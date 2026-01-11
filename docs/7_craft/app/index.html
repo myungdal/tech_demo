@@ -1,0 +1,178 @@
+<!-- ============================================================================
+myungdal tech-demo project
+
+Author: 안명달 (Myungdal Ahn)
+Email: mooondal@gmail.com
+GitHub: https://github.com/myungdal/tech_demo.git
+============================================================================ -->
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>ECS 전투 시뮬레이션</title>
+</head>
+<body>
+	<pre style="margin: 20px 50px; font-family: monospace; font-size: 12px; line-height: 1.4;">
+[일반]
+  A - 모든 팀에 랜덤 유닛    B - 현재 팀에 랜덤 유닛    0 - 데이터 뷰 재구성    7 - 콘솔 정보
+
+[유닛 생성] 마우스 위치, 사분면으로 팀 결정
+  D-Warrior  E-Archer   F-Healer   G-Bird     H-Bomber   I-Bazooka  J-Electrician
+  K-Giant    L-Hammer   M-Laser    N-Magnet   O-Parasite P-Sniper   Q-Dracula
+  R-Spider   S-Virus    T-Snake    U-Tower    V-Spawner
+
+[순찰 경로]  1-팀0(좌상단)  2-팀1(우상단)  3-팀2(좌하단)  4-팀3(우하단)
+[특수 효과]  5-폭발        6-자석
+	</pre>
+	<img id="img" src="img.png" width=0 height=0>
+	<canvas id="canvas" width="2048" height="2048" style="margin: 50px; border:1px solid #000000;"></canvas>
+	<script src="http://localhost:9000/livereload.js"></script>
+	<script src="utils/bitField.js"></script>
+	<script src="utils/lockStep.js"></script>
+	<script src="engine/attribute.js"></script>
+	<script src="engine/attributeManager.js"></script>
+	<script src="engine/component.js"></script>
+	<script src="engine/componentManager.js"></script>
+	<script src="engine/engine.js"></script>
+	<script src="engine/entity.js"></script>
+	<script src="engine/entityComponentView.js"></script>
+	<script src="engine/entityManager.js"></script>
+	<script src="engine/eventManager.js"></script>
+	<script src="engine/fastId.js"></script>
+	<script src="engine/objs.js"></script>
+	<script src="engine/system.js"></script>
+	<script src="engine/systemManager.js"></script>
+	<script src="attributes/characterAttribute.js"></script>
+	<script src="attributes/constAttribute.js"></script>
+	<script src="attributes/skillAttribute.js"></script>
+	<script src="components/behaviorComponent.js"></script>
+	<script src="components/buildingComponent.js"></script>
+	<script src="components/characterComponent.js"></script>
+	<script src="components/characterTypeComponents/_flamethrowerTypeComponent.js"></script>
+	<script src="components/characterTypeComponents/_stormTypeComponent.js"></script>
+	<script src="components/characterTypeComponents/_tankTypeComponent.js"></script>
+	<script src="components/characterTypeComponents/archerTypeComponent.js"></script>
+	<script src="components/characterTypeComponents/bazookaTypeComponent.js"></script>
+	<script src="components/characterTypeComponents/birdTypeComponent.js"></script>
+	<script src="components/characterTypeComponents/bomberTypeComponent.js"></script>
+	<script src="components/characterTypeComponents/draculaTypeComponent.js"></script>
+	<script src="components/characterTypeComponents/electricianTypeComponent.js"></script>
+	<script src="components/characterTypeComponents/giantTypeComponent.js"></script>
+	<script src="components/characterTypeComponents/hammerTypeComponent.js"></script>
+	<script src="components/characterTypeComponents/healerTypeComponent.js"></script>
+	<script src="components/characterTypeComponents/laserTypeComponent.js"></script>
+	<script src="components/characterTypeComponents/magnetTypeComponent.js"></script>
+	<script src="components/characterTypeComponents/parasiteTypeComponent.js"></script>
+	<script src="components/characterTypeComponents/snakeTypeComponent.js"></script>
+	<script src="components/characterTypeComponents/sniperTypeComponent.js"></script>
+	<script src="components/characterTypeComponents/spawnerTypeComponent.js"></script>
+	<script src="components/characterTypeComponents/spiderTypeComponent.js"></script>
+	<script src="components/characterTypeComponents/towerTypeComponent.js"></script>
+	<script src="components/characterTypeComponents/virusTypeComponent.js"></script>
+	<script src="components/characterTypeComponents/warriorTypeComponent.js"></script>
+	<script src="components/damageComponent.js"></script>
+	<script src="components/effectComponents/bloodEffectComponent.js"></script>
+	<script src="components/effectComponents/dashEffectComponent.js"></script>
+	<script src="components/effectComponents/dyingEffectComponent.js"></script>
+	<script src="components/effectComponents/electricShockEffectComponent.js"></script>
+	<script src="components/effectComponents/explosionEffectComponent.js"></script>
+	<script src="components/effectComponents/healingEffectComponent.js"></script>
+	<script src="components/effectComponents/magnetEffectComponent.js"></script>
+	<script src="components/effectComponents/parasiteEffectComponent.js"></script>
+	<script src="components/effectComponents/poisonEffectComponent.js"></script>
+	<script src="components/effectComponents/runawayEffectComponent.js"></script>
+	<script src="components/effectComponents/stunEffectComponent.js"></script>
+	<script src="components/effectComponents/virusEffectComponent.js"></script>
+	<script src="components/effectComponents/webEffectComponent.js"></script>
+	<script src="components/enemyComponent.js"></script>
+	<script src="components/flockComponent.js"></script>
+	<script src="components/friendComponent.js"></script>
+	<script src="components/impulseComponent.js"></script>
+	<script src="components/motionComponents/movingSkillMotionComponent.js"></script>
+	<script src="components/motionComponents/skillMotionComponent.js"></script>
+	<script src="components/movementComponent.js"></script>
+	<script src="components/patrolComponent.js"></script>
+	<script src="components/pawnComponent.js"></script>
+	<script src="components/positionComponent.js"></script>
+	<script src="components/recoveryComponent.js"></script>
+	<script src="components/skillComponents/attackSkillComponent.js"></script>
+	<script src="components/skillComponents/bazookaSkillComponent.js"></script>
+	<script src="components/skillComponents/bloodSkillComponent.js"></script>
+	<script src="components/skillComponents/bombSkillComponent.js"></script>
+	<script src="components/skillComponents/dashSkillComponent.js"></script>
+	<script src="components/skillComponents/electricShockSkillComponent.js"></script>
+	<script src="components/skillComponents/hammerSkillComponent.js"></script>
+	<script src="components/skillComponents/healSkillComponent.js"></script>
+	<script src="components/skillComponents/magnetSkillComponent.js"></script>
+	<script src="components/skillComponents/movingAttackSkillComponent.js"></script>
+	<script src="components/skillComponents/parasiteSkillComponent.js"></script>
+	<script src="components/skillComponents/poisonSkillComponent.js"></script>
+	<script src="components/skillComponents/virusSkillComponent.js"></script>
+	<script src="components/skillComponents/webSkillComponent.js"></script>
+	<script src="components/spawnComponent.js"></script>
+	<script src="components/teamComponents/teamComponent0.js"></script>
+	<script src="components/teamComponents/teamComponent1.js"></script>
+	<script src="components/teamComponents/teamComponent2.js"></script>
+	<script src="components/teamComponents/teamComponent3.js"></script>
+	<script src="systems/barrierSystems/barrier.js"></script>
+	<script src="systems/barrierSystems/barrierSystem.js"></script>
+	<script src="systems/behaviorSystem.js"></script>
+	<script src="systems/buildingSystem.js"></script>
+	<script src="systems/coverSystems/coverSystem.js"></script>
+	<script src="systems/coverSystems/uncoverSystem.js"></script>
+	<script src="systems/damageSystem.js"></script>
+	<script src="systems/effectSystems/bloodEffectSystem.js"></script>
+	<script src="systems/effectSystems/dashEffectSystem.js"></script>
+	<script src="systems/effectSystems/dyingEffectSystem.js"></script>
+	<script src="systems/effectSystems/electricShockEffectSystem.js"></script>
+	<script src="systems/effectSystems/explosionEffectSystem.js"></script>
+	<script src="systems/effectSystems/healingEffectSystem.js"></script>
+	<script src="systems/effectSystems/magnetEffectSystem.js"></script>
+	<script src="systems/effectSystems/parasiteEffectSystem.js"></script>
+	<script src="systems/effectSystems/poisonEffectSystem.js"></script>
+	<script src="systems/effectSystems/runawayEffectSystem.js"></script>
+	<script src="systems/effectSystems/stunEffectSystem.js"></script>
+	<script src="systems/effectSystems/virusEffectSystem.js"></script>
+	<script src="systems/effectSystems/webEffectSystem.js"></script>
+	<script src="systems/enemySystem.js"></script>
+	<script src="systems/flockSystem.js"></script>
+	<script src="systems/fogSystems/fogSystem.js"></script>
+	<script src="systems/fogSystems/unfogSystem.js"></script>
+	<script src="systems/frictionSystem.js"></script>
+	<script src="systems/friendSystem.js"></script>
+	<script src="systems/impulseSystem.js"></script>
+	<script src="systems/motionSystems/movingSkillMotionSystem.js"></script>
+	<script src="systems/motionSystems/skillMotionSystem.js"></script>
+	<script src="systems/movementToEnemySystem.js"></script>
+	<script src="systems/movementToFlockSystem.js"></script>
+	<script src="systems/movementToFriendSystem.js"></script>
+	<script src="systems/moveSystem.js"></script>
+	<script src="systems/patrolSystem.js"></script>
+	<script src="systems/pawnSystem.js"></script>
+	<script src="systems/recoverySystem.js"></script>
+	<script src="systems/skillSystems/attackSkillSystem.js"></script>
+	<script src="systems/skillSystems/bazookaSkillSystem.js"></script>
+	<script src="systems/skillSystems/bloodSkillSystem.js"></script>
+	<script src="systems/skillSystems/bombSkillSystem.js"></script>
+	<script src="systems/skillSystems/dashSkillSystem.js"></script>
+	<script src="systems/skillSystems/electricShockSkillSystem.js"></script>
+	<script src="systems/skillSystems/hammerSkillSystem.js"></script>
+	<script src="systems/skillSystems/healSkillSystem.js"></script>
+	<script src="systems/skillSystems/magnetSkillSystem.js"></script>
+	<script src="systems/skillSystems/movingAttackSkillSystem.js"></script>
+	<script src="systems/skillSystems/parasiteSkillSystem.js"></script>
+	<script src="systems/skillSystems/poisonSkillSystem.js"></script>
+	<script src="systems/skillSystems/virusSkillSystem.js"></script>
+	<script src="systems/skillSystems/webSkillSystem.js"></script>
+	<script src="systems/spawnSystem.js"></script>
+	<script src="systems/speedSystem.js"></script>
+	<script src="systems/spiritSystem.js"></script>
+	<script src="systems/waveSystem.js"></script>
+	<script src="stats.js"></script>
+	<script src="entityFactory.js"></script>
+	<script src="world.js"></script>
+	<script src="render.js"></script>
+	<script src="main.js"></script>
+</body>
+</html>

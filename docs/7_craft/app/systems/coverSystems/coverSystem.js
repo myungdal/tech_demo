@@ -1,0 +1,2 @@
+class CoverSystem extends System {
+}
