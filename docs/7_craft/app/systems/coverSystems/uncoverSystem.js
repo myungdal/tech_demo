@@ -1,0 +1,2 @@
+class UncoverSystem extends System {
+}

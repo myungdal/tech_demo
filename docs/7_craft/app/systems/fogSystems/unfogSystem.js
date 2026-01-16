@@ -1,0 +1,2 @@
+class UnfogSystem extends System {
+}

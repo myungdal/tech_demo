@@ -1,0 +1,111 @@
+<!-- ============================================================================
+myungdal tech-demo project
+
+Author: 안명달 (Myungdal Ahn)
+Email: mooondal@gmail.com
+GitHub: https://github.com/myungdal/tech_demo.git
+============================================================================ -->
+
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+	<canvas id="canvas" width="512" height="512" style="margin: 50px; border:1px solid #000000;"></canvas>
+	<script type="text/javascript" src="TimeStep.js"></script>
+	<script type="text/javascript">
+		var canvas = document.getElementById("canvas");
+		var ctx = canvas.getContext("2d");
+		ctx.lineWidth = 1;
+		var timeStepGenerator = new TimeStepGenerator(32);
+		var timeStepPlayer = new TimeStepPlayer(32);
+		var totalStepCount0 = 0;
+		var totalStepCount1 = 0;
+		var jitterBuffer = 0;
+		var first = 1;
+		(function init() {
+		})();
+		function update() {
+			var stepCount0 = timeStepGenerator.Generate();
+			totalStepCount0 += stepCount0;
+			jitterBuffer += stepCount0;
+
+			if (1 === first) {
+				first = 0;
+				(function jitter() {
+					var applyStepCount = Math.floor(Math.random() * Math.max(jitterBuffer, 0));
+					jitterBuffer -= applyStepCount;
+					timeStepPlayer.PushStep(applyStepCount);
+					setTimeout(jitter,
+						50 + Math.random() * 100 + ((Math.random() * 30 < 1) ? 400 : 0) + ((Math.random() * 70 < 1) ? 800 : 0)
+					);
+				}.bind(this))();
+			}
+			
+			var stepCount1 = timeStepPlayer.PlayStep();
+			totalStepCount1 += stepCount1;
+
+			console.log(totalStepCount0, totalStepCount1);
+
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+			ctx.fillText(`jitterBuffer: ${jitterBuffer}`, 10, 10);
+			ctx.fillText(`queuedStepCount: ${timeStepPlayer.mQueue.mQueuedStepCount}`, 10, 30);
+			ctx.fillText(`speed: ${timeStepPlayer.mTuner.mSpeed}`, 10, 50);
+			ctx.fillText(`dest: ${timeStepPlayer.mJitterTime * TimeStepTuner.JITTER_COEFFICIENT}`, 10, 70);
+
+			ctx.beginPath();
+			var r0 = (totalStepCount0 % 300) / 300 * 2 * Math.PI;
+			var cos0 = Math.cos(r0);
+			var sin0 = Math.sin(r0);
+			ctx.arc(200 + cos0 * 100, 200 + sin0 * 100, 3, 0, Math.PI * 2, true);
+			ctx.closePath();
+			ctx.stroke();
+
+			ctx.beginPath();
+			var r1 = (totalStepCount1 % 300) / 300 * 2 * Math.PI;
+			var cos1 = Math.cos(r1);
+			var sin1 = Math.sin(r1);
+			ctx.arc(200 + cos1 * 100, 200 + sin1 * 100, 5, 0, Math.PI * 2, true);
+			ctx.stroke();
+
+			ctx.beginPath();
+			var r2 = ((totalStepCount0 - jitterBuffer) % 300) / 300 * 2 * Math.PI;
+			var cos2 = Math.cos(r2);
+			var sin2 = Math.sin(r2);
+			ctx.arc(200 + cos2 * 100, 200 + sin2 * 100, 2, 0, Math.PI * 2, true);
+			ctx.stroke();
+
+			ctx.beginPath();
+			for (x = -1000; x < 1000; ++x) {
+				ctx.arc(200 + x * 0.1, 400, 0.2, 0, Math.PI * 2, true);
+			}			
+			ctx.stroke();
+
+			ctx.beginPath();
+			for (y = -1000; y < 1000; ++y) {
+				ctx.arc(200, 400 + y * 0.1, 0.2, 0, Math.PI * 2, true);
+			}			
+			ctx.stroke();
+
+			ctx.beginPath();
+			for (x = -1000; x < 1000; ++x) {
+				ctx.arc(200 + x * 0.1, 400 + 50, 0.3, 0, Math.PI * 2, true);
+			}			
+			ctx.stroke();
+
+			ctx.beginPath();
+			for (x = -1000; x < 1000; ++x) {
+				var y = timeStepPlayer.mTuner.DoubleSigmoid(x / 1000);
+
+				ctx.arc(200 + x * 0.1, 400 + y * 50, 1, 0, Math.PI * 2, true);
+			}			
+			ctx.stroke();
+
+			//setTimeout(update, 0);
+		}
+		//update();
+		setInterval(update, 0);
+	</script>
+</body>
+</html>

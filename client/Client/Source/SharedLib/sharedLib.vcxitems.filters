@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Public">
+      <UniqueIdentifier>{31dd901e-9124-4214-87e5-cf3218dff334}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private">
+      <UniqueIdentifier>{9455acf8-7820-4bdd-9dc7-691dfa5079c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\WorldCreationHelper">
+      <UniqueIdentifier>{afa40b32-dede-469b-bac6-024c938b375d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\WorldCreationHelper">
+      <UniqueIdentifier>{bcd7f5d4-349c-4123-8345-d91387f844f2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)SharedLib\README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Public\SharedLib\WorldCreationHelper\WorldCreationHelper.h">
+      <Filter>Public\WorldCreationHelper</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Private\SharedLib\WorldCreationHelper\WorldCreationHelper.cpp">
+      <Filter>Private\WorldCreationHelper</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

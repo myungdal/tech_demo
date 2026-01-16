@@ -1,0 +1,74 @@
+{
+  "1": {
+    "class_type": "CheckpointLoaderSimple",
+    "inputs": {
+      "ckpt_name": "sd_xl_base_1.0.safetensors"
+    }
+  },
+  "2": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "{{CHARACTER_IMAGE}}"
+    }
+  },
+  "3": {
+    "class_type": "ImageScale",
+    "inputs": {
+      "image": ["2", 0],
+      "upscale_method": "nearest-exact",
+      "width": 512,
+      "height": 512,
+      "crop": "center"
+    }
+  },
+  "4": {
+    "class_type": "VAEEncode",
+    "inputs": {
+      "vae": ["1", 2],
+      "pixels": ["3", 0]
+    }
+  },
+  "5": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "clip": ["1", 1],
+      "text": "{{POSITIVE_PROMPT}}"
+    }
+  },
+  "6": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "clip": ["1", 1],
+      "text": "{{NEGATIVE_PROMPT}}"
+    }
+  },
+  "7": {
+    "class_type": "KSampler",
+    "inputs": {
+      "model": ["1", 0],
+      "positive": ["5", 0],
+      "negative": ["6", 0],
+      "latent_image": ["4", 0],
+      "seed": "{{SEED}}",
+      "steps": 20,
+      "cfg": 7.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 0.3
+    }
+  },
+  "8": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "vae": ["1", 2],
+      "samples": ["7", 0]
+    }
+  },
+  "9": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": ["8", 0],
+      "filename_prefix": "{{OUTPUT_PREFIX}}"
+    }
+  }
+}

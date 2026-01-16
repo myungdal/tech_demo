@@ -1,0 +1,257 @@
+<!-- ============================================================================
+myungdal tech-demo project
+
+Author: 안명달 (Myungdal Ahn)
+Email: mooondal@gmail.com
+GitHub: https://github.com/myungdal/tech_demo.git
+============================================================================ -->
+
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+
+<body>
+	<canvas id="canvas" width="512" height="512" style="margin: 50px; border:1px solid #000000;"></canvas>
+
+	<script type="text/javascript" src="nearest3.js">
+	</script>
+
+	<script type="text/javascript">
+		var canvas = document.getElementById("canvas");
+		var ctx = canvas.getContext("2d");
+		//ctx.globalAlpha = 0.2;
+		ctx.lineWidth = 1;
+		var vertices = new Array(2000);
+		for (var i = vertices.length; i--;) {
+			var color = i % 4;
+			var x = 0;
+			var y = 0;
+			if (color == 0) {
+				x = canvas.width * 0.25 * (0+ Math.random());
+				y = canvas.height * 0.25 * (1 + Math.random());			
+			}
+			else if (color == 1) {
+				x = canvas.width * 0.25 * (1 + Math.random());
+				y = canvas.height * 0.25 * (3 + Math.random());
+			}
+			else if (color == 2) {
+				x = canvas.width * 0.25 * (3 + Math.random());
+				y = canvas.height * 0.25 * (2 + Math.random());
+			}
+			else if (color == 3) {
+				x = canvas.width * 0.25 * (2 + Math.random());
+				y = canvas.height * 0.25 * (0 + Math.random());
+			}
+			if (color == 0) color = 2;
+			else if (color == 1) color = 1;
+			else if (color == 2) color = 3;
+			else if (color == 3) color = 0;
+			vertices[i] = [x, y, color];
+		}
+		var nearest3 = new Nearest3(canvas.width, canvas.height, 32, vertices);
+		vertices.length = 0;
+		canvas.addEventListener("mousedown", onMouseDown, false);
+		canvas.addEventListener("mouseup", onMouseUp, false);
+		canvas.addEventListener("mousemove", onMouseMove, false);
+		var isMouseDown = false;
+		var mousePos = { x: 0, y: 0 };
+		var mousePosDelta = { x: 0, y: 0 };
+		function onMouseDown(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			isMouseDown = true;
+			mousePos.x = e.pageX - canvas.offsetLeft;
+			mousePos.y = e.pageY - canvas.offsetTop;
+			mousePosDelta.x = 0;
+			mousePosDelta.y = 0;
+
+			var vertices = new Array(100);
+			var color = Math.floor(Math.random() * 4);
+			if (mousePos.x < canvas.width / 2 && mousePos.y < canvas.height / 2) color = 0;
+			else if (mousePos.x < canvas.width / 2 && mousePos.y > canvas.height / 2) color = 1;
+			else if (mousePos.x > canvas.width / 2 && mousePos.y < canvas.height / 2) color = 2;
+			else color = 3;
+			for (var i = vertices.length; i--;) {				
+				var x = mousePos.x;
+				var y = mousePos.y;
+				vertices[i] = [x, y, color];
+			}
+			nearest3.add(vertices);
+		}
+		function onMouseUp(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			isMouseDown = false;
+			mousePosDelta.x = 0;
+			mousePosDelta.y = 0;
+		}
+		function onMouseMove(e) {
+			if (!isMouseDown) return;
+			e.preventDefault();
+			e.stopPropagation();
+			var x = e.pageX - canvas.offsetLeft;
+			var y = e.pageY - canvas.offsetTop;			
+			mousePosDelta.x = x - mousePos.x;
+			mousePosDelta.y = y - mousePos.y;
+			mousePos.x = x;
+			mousePos.y = y;
+		}
+		function draw() {
+			var i = 0;
+			//console.time("nearest3.update()");
+			var result = nearest3.update(mousePos.x, mousePos.y, 0.4, mousePosDelta.x, mousePosDelta.y);
+			var entities = result.entities;
+			var grid = result.grid;
+			//console.timeEnd("nearest3.update()");			
+			console.log(nearest3.scores[0], nearest3.scores[1], nearest3.scores[2], nearest3.scores[3]);
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			var n = entities.length;
+
+			//ctx.strokeStyle = "#000000";
+			//for (var c = grid.cols; c--;) {
+			//	for (var r = grid.rows; r--;) {
+			//		var x = c * grid.cellSize + grid.cellSize * 0.5;
+			//		var y = r * grid.cellSize + grid.cellSize * 0.5;
+			//		ctx.beginPath();
+			//		ctx.arc(x, y, 2, 0, Math.PI * 2, true);
+			//		ctx.closePath();
+			//		ctx.stroke();
+			//	}
+			//}
+
+			//ctx.strokeStyle = "#333300";
+			//ctx.beginPath();
+			//ctx.arc(mousePos.x, mousePos.y, 4, 0, Math.PI * 2, true);
+			//ctx.closePath();
+			//ctx.stroke();
+
+			//ctx.strokeStyle = "#003333";
+			//for (var c = grid.cols; c--;) {
+			//	for (var r = grid.rows; r--;) {
+			//		var x0 = c * grid.cellSize + grid.cellSize * 0.5;
+			//		var y0 = r * grid.cellSize + grid.cellSize * 0.5;
+			//		var x1 = x0;
+			//		var y1 = y0 + grid.cells[c][r].pressure;
+			//		ctx.beginPath();
+			//		ctx.moveTo(x0, y0);
+			//		ctx.lineTo(x1, y1);
+			//		ctx.closePath();
+			//		ctx.stroke();
+			//	}
+			//}
+
+			//ctx.strokeStyle = "#FF0000";
+			//for (var c = grid.cols; c--;) {
+			//	for (var r = grid.rows; r--;) {
+			//		var x0 = c * grid.cellSize + grid.cellSize * 0.5;
+			//		var y0 = r * grid.cellSize + grid.cellSize * 0.5;
+			//		var x1 = x0 + grid.cells[c][r].vx0 * 10;
+			//		var y1 = y0 + grid.cells[c][r].vy0 * 10;
+			//		ctx.beginPath();
+			//		ctx.moveTo(x0, y0);
+			//		ctx.lineTo(x1, y1);
+			//		ctx.closePath();
+			//		ctx.stroke();
+			//	}
+			//}
+			//ctx.strokeStyle = "#00FF00";
+			//for (var c = grid.cols; c--;) {
+			//	for (var r = grid.rows; r--;) {
+			//		var x0 = c * grid.cellSize + grid.cellSize * 0.5;
+			//		var y0 = r * grid.cellSize + grid.cellSize * 0.5;
+			//		var x1 = x0 + grid.cells[c][r].vx1 * 10;
+			//		var y1 = y0 + grid.cells[c][r].vy1 * 10;
+			//		ctx.beginPath();
+			//		ctx.moveTo(x0, y0);
+			//		ctx.lineTo(x1, y1);
+			//		ctx.closePath();
+			//		ctx.stroke();
+			//	}
+			//}
+			//ctx.strokeStyle = "#0000FF";
+			//for (var c = grid.cols; c--;) {
+			//	for (var r = grid.rows; r--;) {
+			//		var x0 = c * grid.cellSize + grid.cellSize * 0.5;
+			//		var y0 = r * grid.cellSize + grid.cellSize * 0.5;
+			//		var x1 = x0 + grid.cells[c][r].vx2 * 10;
+			//		var y1 = y0 + grid.cells[c][r].vy2 * 10;
+			//		ctx.beginPath();
+			//		ctx.moveTo(x0, y0);
+			//		ctx.lineTo(x1, y1);
+			//		ctx.closePath();
+			//		ctx.stroke();
+			//	}
+			//}
+			//ctx.strokeStyle = "#000000";
+			//for (var c = grid.cols; c--;) {
+			//	for (var r = grid.rows; r--;) {
+			//		var x0 = c * grid.cellSize + grid.cellSize * 0.5;
+			//		var y0 = r * grid.cellSize + grid.cellSize * 0.5;
+			//		var x1 = x0 + grid.cells[c][r].vx3 * 10;
+			//		var y1 = y0 + grid.cells[c][r].vy3 * 10;
+			//		ctx.beginPath();
+			//		ctx.moveTo(x0, y0);
+			//		ctx.lineTo(x1, y1);
+			//		ctx.closePath();
+			//		ctx.stroke();
+			//	}
+			//}
+
+			for (i = n; i--;) {
+				ctx.beginPath();
+				var a = entities[i];
+				if (a.color === 0) ctx.strokeStyle = "#FF0000";
+				else if (a.color === 1) ctx.strokeStyle = "#00FF00";
+				else if (a.color === 2) ctx.strokeStyle = "#0000FF";
+				else if (a.color === 3) ctx.strokeStyle = "#000000";				
+				var life = Math.floor(a.life / MAX_LIFE * 255);
+				ctx.strokeStyle += (life <= 15) ? '0' + life.toString(16) : life.toString(16);
+				//ctx.rect(a.x, a.y, 1, 1);
+				ctx.moveTo(a.x, a.y);
+				ctx.lineTo(a.x + a.vx * 3, a.y + a.vy * 3);
+				ctx.closePath();
+				ctx.stroke();
+			}
+			
+			//ctx.strokeStyle = "#FF0000";
+			//for (i = n; i--;) {
+			//	ctx.beginPath();
+			//	var a = entities[i];
+			//	var b = a.e0;
+			//	if (!b) continue;
+			//	ctx.moveTo(a.x, a.y);
+			//	ctx.lineTo(b.x, b.y);
+			//	ctx.closePath();
+			//	ctx.stroke();
+			//}
+			//ctx.strokeStyle = "#00FF00";
+			//for (i = n; i--;) {
+			//	ctx.beginPath();
+			//	var a = entities[i];
+			//	var b = a.e1;
+			//	if (!b) continue;
+			//	ctx.moveTo(a.x, a.y);
+			//	ctx.lineTo(b.x, b.y);
+			//	ctx.closePath();
+			//	ctx.stroke();
+			//}
+			//ctx.strokeStyle = "#0000FF";
+			//for (i = n; i--;) {
+			//	ctx.beginPath();
+			//	var a = entities[i];
+			//	var b = a.e2;
+			//	if (!b) continue;
+			//	ctx.moveTo(a.x, a.y);
+			//	ctx.lineTo(b.x, b.y);
+			//	ctx.closePath();
+			//	ctx.stroke();
+			//}
+
+			//setTimeout(draw, 0.001);
+		}
+		//draw();
+		setInterval(draw, 10);
+	</script>
+</body>
+</html>

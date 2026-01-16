@@ -1,0 +1,11 @@
+﻿// ============================================================================
+// myungdal tech-demo project
+// 
+// Author: 안명달 (Myungdal Ahn)
+// Email: mooondal@gmail.com
+// GitHub: https://github.com/myungdal/tech_demo.git
+// ============================================================================
+
+#include "pch_map_editor.h"
+
+DEFINE_LOG_CATEGORY(MapEditor);
